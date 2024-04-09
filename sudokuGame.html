@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="sudokuGame.css">
+    <script src="validateSudokoboard.js"></script>
+</head>
+
+<body>
+    <div id="app"></div>
+    <script>
+        // model
+        let startBoard = '12  34          ';
+        let boards = '12  34          ';
+        let previousBoard = ''
+        let possibleErrorMessages = ['ugyldig brett, feil lengde',
+            'ugyldig brett, ugyldig tegn',
+            'delvis utfylt, feil i rad',
+            'delvis utfylt, feil i kolonne',
+            'delvis utfylt, feil i firkant',
+            'helt utfylt, feil i rad',
+            'helt utfylt, feil i kolonne',
+            'helt utfylt, feil i firkant'];
+        let possibleHappyMessage = ['helt utfylt, ingen feil'];
+        let somethingIsWrong = false;
+        let finished = false;
+
+        // view
+        updateView();
+        function updateView() {
+            document.getElementById('app').innerHTML = /*HTML*/`
+                <div class="board">
+                    ${createSquares()}
+                </div>
+                <div><button onclick="resetBoard()">Start på nytt</button></div>
+                <div>${finished ? 'Gratulerer, du har funnet en riktig løsning' : ''}</div>
+            `;
+        }
+
+
+        function createSquares() {
+            if (finished) return makeGreenBoard();
+            if (somethingIsWrong) return makeErrorBoard();
+            return makeNormalBoard();
+        }
+
+        function makeNormalBoard() {
+            let html = '';
+            for (let i = 0; i < boards.length; i++) {
+                if (boards[i] != ' ') {
+                    if (startBoard[i] != ' ') {
+                        html += /*HTML*/`<div style="color: blue">${boards[i]}</div>`;
+                    }
+                    else {
+                        html += /*HTML*/`<div><input class="inputfelt" type="number" value="${boards[i]}" onchange="enterDigit(${i},this.value)"></div>`;
+                    }
+                }
+                else {
+                    html += /*HTML*/`<div><input class="inputfelt" type="number" onchange="enterDigit(${i},this.value)"></div>`;
+                }
+            }
+            return html;
+        }
+
+        function makeErrorBoard() {
+            let html = '';
+            for (let i = 0; i < boards.length; i++) {
+                if (boards[i] != ' ') {
+                    if (startBoard[i] != ' ') {
+                        html += /*HTML*/`<div style="background-color: lightpink; color: blue">${boards[i]}</div>`;
+                    }
+                    else {
+                        html += /*HTML*/`<div style="background-color: lightpink"><input class="inputfelt2" type="number" value="${boards[i]}" onchange="enterDigit(${i},this.value)"></div>`;
+                    }
+                }
+                else {
+                    html += /*HTML*/`<div style="background-color: lightpink"><input class="inputfelt2" type="number" onchange="enterDigit(${i},this.value)"></div>`;
+                }
+            }
+            return html;
+        }
+
+        function makeGreenBoard() {
+            let html = '';
+            for (let square of boards) {
+                html += /*HTML*/`<div style="background-color: lightgreen">${square}</div>`;
+            }
+            return html;
+        }
+
+        // controller
+        function resetBoard() {
+            boards = startBoard;
+            finished = false;
+            somethingIsWrong = false;
+            updateView();
+        }
+
+        function enterDigit(index, value) {
+            if (value > 4 || value < 1) return;
+            boards = boards.substring(0, index) + value + boards.substring(index + 1);
+            let message = validateSudokuboard(boards);
+            if (possibleErrorMessages.includes(message)) somethingIsWrong = true;
+            else if (possibleHappyMessage.includes(message)) finished = true;
+            else {
+                somethingIsWrong = false;
+                finished = false;
+            }
+            updateView();
+        }
+    </script>
+</body>
+
+</html>
